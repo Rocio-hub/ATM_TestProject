@@ -273,8 +273,8 @@ public class ConsoleManager {
 	/* See all transactions for specific customer */
 
 	private void seeTransactions() throws SQLException {
-		List<Transaction> transactionList = dataAccess.getAllTransactionsById(currentCustomer.getId());
-		System.out.println(transactionList.size());
+		System.out.println(currentCustomer.getId());
+		List<Transaction> transactionList = dataAccess.getAllTransactionsById(currentCustomer.getId());		
 		for (Transaction transaction : transactionList) {
 			String tempAmount = moneyFormat.format(transaction.getAmount());
 

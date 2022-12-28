@@ -30,7 +30,7 @@ public class DatabaseSeeder {
 			statement.execute();
 		};
 		
-		String sql2 = "CREATE TABLE transactions (id INT NOT NULL AUTO_INCREMENT, customer_id INT NOT NULL, to_account_number INT NOT NULL, type VARCHAR(30) NOT NULL, date VARCHAR(20) NOT NULL, amount DOUBLE NOT NULL, PRIMARY KEY (id))";
+		String sql2 = "CREATE TABLE transactions (id INT NOT NULL AUTO_INCREMENT, customer_id INT NOT NULL, to_account_number INT, type VARCHAR(30) NOT NULL, date VARCHAR(20) NOT NULL, amount DOUBLE NOT NULL, PRIMARY KEY (id))";
 		try (PreparedStatement statement = connection.prepareStatement(sql2)) {
 			statement.execute();
 		}		
@@ -39,33 +39,12 @@ public class DatabaseSeeder {
 	public void seedCustomers() throws SQLException {
 		String sql = "INSERT INTO customers (id, customer_name, pin, balance, daily_limit, money_used) VALUES (?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setInt(1, 7);
+			statement.setInt(1, 1);
 			statement.setString(2, "Remi");
 			statement.setInt(3, 1234);
 			statement.setDouble(4, 2000.0);
 			statement.setDouble(5, 500.0);
 			statement.setDouble(6, 70.0);
-			statement.executeUpdate();
-
-			statement.setInt(1, 8);
-			statement.setString(2, "Mads");
-			statement.setInt(3, 5678);
-			statement.setDouble(4, 2500);
-			statement.setDouble(5, 500);
-			statement.setDouble(6, 0);
-			statement.executeUpdate();
-		}
-	}
-	
-	/*public void seedTransactions() throws SQLException {
-		String sql = "INSERT INTO customers (id, customer_name, pin, balance, daily_limit, money_used) VALUES (?, ?, ?, ?, ? ?)";
-		try (PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setInt(1, 1);
-			statement.setString(2, "Remi");
-			statement.setInt(3, 1234);
-			statement.setDouble(4, 2000);
-			statement.setDouble(5, 500);
-			statement.setDouble(6, 70);
 			statement.executeUpdate();
 
 			statement.setInt(1, 2);
@@ -76,5 +55,34 @@ public class DatabaseSeeder {
 			statement.setDouble(6, 0);
 			statement.executeUpdate();
 		}
-	}*/
+	}
+	
+	public void seedTransactions() throws SQLException {
+		String sql = "INSERT INTO transactions (id, customer_id, to_account_number, type, date, amount) VALUES (?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setInt(1, 1);
+			statement.setInt(2, 1);
+			statement.setInt(3, 0);
+			statement.setString(4, "DEPOSIT");
+			statement.setString(5, "28/12/22");
+			statement.setDouble(6, 70.0);
+			statement.executeUpdate();
+
+			statement.setInt(1, 2);
+			statement.setInt(2, 1);
+			statement.setInt(3, 0);
+			statement.setString(4, "WITHDRAW");
+			statement.setString(5, "28/12/22");
+			statement.setDouble(6, 70.0);
+			statement.executeUpdate();
+			
+			statement.setInt(1, 3);
+			statement.setInt(2, 1);
+			statement.setInt(3, 8888);
+			statement.setString(4, "SEND");
+			statement.setString(5, "28/12/22");
+			statement.setDouble(6, 70.0);
+			statement.executeUpdate();
+		}
+	}
 }

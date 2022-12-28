@@ -44,6 +44,7 @@ public class Main extends ConsoleManager {
 		seeder.createCustomersTable();
 		seeder.createTransactionsTable();
 		seeder.seedCustomers();
+		seeder.seedTransactions();
 		DataAccess dataAccess = new DataAccess(connection);
 
 		ConsoleManager optionMenu = new ConsoleManager(dataAccess);
