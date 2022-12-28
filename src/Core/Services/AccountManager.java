@@ -130,7 +130,4 @@ public class AccountManager {
 	private int pinNumber;
 	private double checkingBalance = 0;
 	private double savingBalance = 0;
-	
-	
-
 }

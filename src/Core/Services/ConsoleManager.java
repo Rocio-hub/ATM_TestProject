@@ -326,4 +326,9 @@ public class ConsoleManager {
 	public void setSelection(int selection) {
 		this.selection = selection;
 	}
+
+	public void setDataAccess(DataAccess dataAccess2) {
+		this.dataAccess = dataAccess2;
+		
+	}
 }
