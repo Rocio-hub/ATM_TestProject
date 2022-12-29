@@ -3,6 +3,7 @@ package Core.Services;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -13,25 +14,23 @@ import Core.Entities.Transaction;
 public class ConsoleManager {
 	private DataAccess dataAccess;
 	private Customer currentCustomer;
-	
+
 	public ConsoleManager(DataAccess dataAccess) {
 		this.dataAccess = dataAccess;
 	}
 
-	private double ATM_AVAILABLE_CASH = 15000;
+	private int ATM_AVAILABLE_CASH = 15000;
 
-	Scanner menuInput = new Scanner(System.in);
-	DecimalFormat moneyFormat = new DecimalFormat("###,##0.00' DKK'");
+	private Scanner menuInput = new Scanner(System.in);
+	private DecimalFormat moneyFormat = new DecimalFormat("###,##0.00' DKK'");
 	private int localPinNumber, selection;
 	private String localCustName;
-	private Core.Entities.Customer customer = new Core.Entities.Customer();
-	Core.Entities.Transaction transaction = new Core.Entities.Transaction();
-	private List<Core.Entities.Customer> customerList = new ArrayList<Core.Entities.Customer>();
+	private Customer customer;
+	private List<Customer> customerList;;
 
 	/* Validate Login information customer number and pin number */
 
-	public void getLogin() throws IOException, SQLException {
-
+	public void loginConsole() throws IOException, SQLException {
 		int x = 1;
 
 		do {
@@ -51,25 +50,32 @@ public class ConsoleManager {
 				System.out.println("\n" + "Invalid character(s). Only numbers." + "\n");
 				x = 2;
 			}
-			for (Customer customer : dataAccess.getAllUsers()) {
-				System.out.println(getLocalCustName());
-				System.out.println(customer.getCustomerName());
-				if (getLocalCustName().equals(customer.getCustomerName()) && getLocalPinNumber() == customer.getPin()) {
-					currentCustomer = customer;
-					this.setCustomer(customer);
-					goToMenu();
-					setLocalCustName("");
-					setLocalPinNumber(0);
-					return;
-				}
+			if (loginLogic()) {
+				goToMenuConsole();
 			}
-			System.out.println("\n" + "Wrong Customer Number or Pin Number." + "\n");
 		} while (x == 1);
+	}
+
+	public boolean loginLogic() throws IOException, SQLException {
+		for (Customer customer : dataAccess.getAllUsers()) {
+			System.out.println(getLocalCustName());
+			System.out.println(customer.getCustomerName());
+			if (getLocalCustName().equals(customer.getCustomerName()) && getLocalPinNumber() == customer.getPin()) {
+				currentCustomer = customer;
+				//this.setCustomer(customer);
+
+				setLocalCustName("");
+				setLocalPinNumber(0);
+				return true;
+			}
+		}
+		System.out.println("\n" + "Wrong Customer Number or Pin Number." + "\n");
+		return false;
 	}
 
 	/* Display Menu */
 
-	public void goToMenu() throws SQLException {
+	public void goToMenuConsole() throws SQLException {
 		int x = 1;
 		do {
 			System.out.printf(">>Select the action you want to perform: %n");
@@ -100,15 +106,15 @@ public class ConsoleManager {
 				System.out.printf("--------------------------------------%n");
 				System.out.printf("           Make A Deposit %n");
 				System.out.printf("--------------------------------------%n");
-				makeDeposit();
+				makeDepositConsole();
 				break;
 
 			case 3:
-				withdrawFunds();
+				withdrawFundsConsole();
 				break;
 
 			case 4:
-				sendFunds();
+				sendFundsConsole();
 				break;
 
 			case 5:
@@ -133,25 +139,33 @@ public class ConsoleManager {
 
 	public void viewBalance() throws SQLException {
 		String balance = moneyFormat.format(dataAccess.getUserById(currentCustomer.getId()).getBalance());
-		
+
+		viewBalanceConsole(balance);
+	}
+
+	private void viewBalanceConsole(String balance) throws SQLException {
 		System.out.printf("  | %-30s | %n", "FUNDS");
 		System.out.printf("--------------------------------------%n");
 		System.out.printf("  | %-30s | %n", balance);
 		System.out.printf("--------------------------------------%n");
-
 	}
 
 	/* Make a deposit. No requirements */
 
-	private void makeDeposit() throws SQLException {
+	private void makeDepositConsole() throws SQLException {
 		System.out.println(">> Insert the amount");
 		System.out.printf("--------------------------------------%n");
 		int amount = menuInput.nextInt();
 
-		int transactionId = dataAccess.getAllTransactionsById(currentCustomer.getId()).size() +1;
-		Transaction transaction = new Transaction(transactionId, getCustomer().getId(), 0, "DEPOSIT", "26/11/22", amount);
-		dataAccess.createTransaction(transaction);	
-		
+		makeDeposit(amount);
+	}
+
+	private void makeDeposit(double amount) throws SQLException {
+		int transactionId = dataAccess.getAllTransactionsById(currentCustomer.getId()).size() + 1;
+		Transaction transaction = new Transaction(transactionId, getCustomer().getId(), 0, "DEPOSIT", "26/11/22",
+				amount);
+		dataAccess.createTransaction(transaction);
+
 		System.out.println(dataAccess.getAllTransactionsById(currentCustomer.getId()));
 
 		double newBalance = dataAccess.makeDeposit(currentCustomer.getId(), amount);
@@ -169,23 +183,30 @@ public class ConsoleManager {
 	 * Daily limit should be >= input
 	 */
 
-	private void withdrawFunds() throws SQLException {
+	private void withdrawFundsConsole() throws SQLException {
 		System.out.printf("--------------------------------------%n");
 		System.out.println(">> Insert the amount");
 		System.out.printf("--------------------------------------%n");
 		int amount = menuInput.nextInt();
 
-		if (dataAccess.getUserById(currentCustomer.getId()).getBalance() >= amount 
+		withdrawFunds(amount);
+	}
+
+	public void withdrawFunds(double amount) throws SQLException {
+		if (dataAccess.getUserById(currentCustomer.getId()).getBalance() >= amount
 				&& ATM_AVAILABLE_CASH >= amount
 				&& dataAccess.getUserById(currentCustomer.getId()).getDailyLimit() >= amount) {
-			dataAccess.updateMoneyUsedById(currentCustomer.getId(), amount);
 			
-			int transactionId = dataAccess.getAllTransactionsById(currentCustomer.getId()).size() +1;
-			Transaction transaction = new Transaction(transactionId, getCustomer().getId(), 0, "WITHDRAW", "26/11/22", amount);
+			dataAccess.updateMoneyUsedById(currentCustomer.getId(), amount);
+
+			int transactionId = dataAccess.getAllTransactionsById(currentCustomer.getId()).size() + 1;
+			Transaction transaction = new Transaction(transactionId, getCustomer().getId(), 0, "WITHDRAW",
+					"29/12/22", amount);
 			dataAccess.createTransaction(transaction);
 
 			double newBalance = dataAccess.makeWithdrawal(currentCustomer.getId(), amount);
 			String temp = moneyFormat.format(newBalance);
+			ATM_AVAILABLE_CASH -= amount;
 
 			System.out.printf("--------------------------------------%n");
 			System.out.printf("  | %-12s | %-15s | %n", "WITHDRAWN", "NEW BALANCE");
@@ -194,12 +215,13 @@ public class ConsoleManager {
 			System.out.printf("--------------------------------------%n");
 
 		} else {
+			//User has less money than withdrawal amount
 			if (getCustomer().getBalance() < amount) {
 				System.out.printf("--------------------------------------%n");
 				System.out.printf("         Insuficient funds.%n");
 				System.out.printf("--------------------------------------%n");
 			}
-
+			//ATM has less money that withdrawal amount
 			else if (ATM_AVAILABLE_CASH < amount) {
 				System.out.printf("--------------------------------------%n");
 				System.out.printf("         This ATM cannot withdraw that amount.%n");
@@ -207,6 +229,7 @@ public class ConsoleManager {
 			}
 
 			else {
+				//User has reached daily limit amount
 				String tempUsed = moneyFormat.format(getCustomer().getMoneyUsed());
 				String tempLimit = moneyFormat.format(getCustomer().getDailyLimit());
 
@@ -225,7 +248,7 @@ public class ConsoleManager {
 	 * Send funds. Balance should be >= input Daily limit should be >= input
 	 */
 
-	private void sendFunds() throws SQLException {
+	private void sendFundsConsole() throws SQLException {
 		System.out.printf("--------------------------------------%n");
 		System.out.printf(">>Insert the account number%n");
 		System.out.printf("--------------------------------------%n");
@@ -235,13 +258,19 @@ public class ConsoleManager {
 		System.out.printf("--------------------------------------%n");
 		int amount = menuInput.nextInt();
 
+		sendFunds(accountNumber, amount);
+	}
+
+	public void sendFunds(int accountNumber, double amount) throws SQLException {
+
 		if (getCustomer().getBalance() >= amount && getCustomer().getDailyLimit() >= amount) {
 			getCustomer().setMoneyUsed(getCustomer().getMoneyUsed() - amount);
 
-			int transactionId = dataAccess.getAllTransactionsById(currentCustomer.getId()).size() +1;
-			Transaction transaction = new Transaction(transactionId, getCustomer().getId(), accountNumber, "SEND", "26/11/22", amount);
+			int transactionId = dataAccess.getAllTransactionsById(currentCustomer.getId()).size() + 1;
+			Transaction transaction = new Transaction(transactionId, getCustomer().getId(), accountNumber, "SEND",
+					"26/11/22", amount);
 			dataAccess.createTransaction(transaction);
-			
+
 			double newBalance = dataAccess.sendFunds(currentCustomer.getId(), accountNumber, amount);
 			String temp = moneyFormat.format(amount);
 
@@ -272,9 +301,9 @@ public class ConsoleManager {
 
 	/* See all transactions for specific customer */
 
-	private void seeTransactions() throws SQLException {
+	public void seeTransactions() throws SQLException {
 		System.out.println(currentCustomer.getId());
-		List<Transaction> transactionList = dataAccess.getAllTransactionsById(currentCustomer.getId());		
+		List<Transaction> transactionList = dataAccess.getAllTransactionsById(currentCustomer.getId());
 		for (Transaction transaction : transactionList) {
 			String tempAmount = moneyFormat.format(transaction.getAmount());
 
@@ -288,11 +317,11 @@ public class ConsoleManager {
 	}
 
 	public Customer getCustomer() {
-		return customer;
+		return currentCustomer;
 	}
-
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
+	
+	public Customer setCustomer(Customer customer) {
+		return this.currentCustomer = customer;
 	}
 
 	public String getLocalCustName() {
@@ -329,6 +358,13 @@ public class ConsoleManager {
 
 	public void setDataAccess(DataAccess dataAccess2) {
 		this.dataAccess = dataAccess2;
-		
+	}
+
+	public void setATMAvailableCash(int cash) {
+		this.ATM_AVAILABLE_CASH = cash;
+	}
+	
+	public int getATMAvailableCash() {
+		return ATM_AVAILABLE_CASH;
 	}
 }

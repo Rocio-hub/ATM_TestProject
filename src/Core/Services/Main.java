@@ -49,6 +49,6 @@ public class Main extends ConsoleManager {
 
 		ConsoleManager optionMenu = new ConsoleManager(dataAccess);
 
-		optionMenu.getLogin();
+		optionMenu.loginConsole();
 	}
 }

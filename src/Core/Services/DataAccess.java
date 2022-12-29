@@ -15,7 +15,7 @@ public class DataAccess implements DataAccessInterface {
 
 	private Connection connection = null;
 
-	public DataAccess(Connection connection) {
+	DataAccess(Connection connection) {
 		this.connection = connection;
 	}
 
@@ -103,7 +103,7 @@ public class DataAccess implements DataAccessInterface {
 	}
 
 	@Override
-	public double sendFunds(int id, int accountNumber, int amount) throws SQLException {
+	public double sendFunds(int id, int accountNumber, double amount) throws SQLException {
 		String sql = "UPDATE customers SET balance = ? WHERE id = ?";
 
 		Customer c = getUserById(id);
@@ -147,7 +147,7 @@ public class DataAccess implements DataAccessInterface {
 		String sql = "INSERT INTO transactions (id, customer_id, to_account_number, type, date, amount) VALUES (?, ?, ?, ?, ?, ?)";
 		PreparedStatement statement = connection.prepareStatement(sql);
 		statement.setInt(1, transaction.getId());
-		statement.setInt(2, transaction.getcustomerId());
+		statement.setInt(2, transaction.getCustomerId());
 		statement.setInt(3, transaction.getToAccountNumber());
 		statement.setString(4, transaction.getType());
 		statement.setString(5, transaction.getDate());

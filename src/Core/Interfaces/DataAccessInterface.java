@@ -13,7 +13,7 @@ public interface DataAccessInterface {
 	public double updateMoneyUsedById(int id, double moneyUsed) throws SQLException;
 	public double makeWithdrawal(int id, double amount) throws SQLException;
 	public double makeDeposit(int id, double amount) throws SQLException;
-	public double sendFunds(int id, int accountNumber, int amount) throws SQLException;
+	public double sendFunds(int id, int accountNumber, double amount) throws SQLException;
 	
 	public void createTransaction(Transaction transaction) throws SQLException;
 	public List<Transaction> getAllTransactionsById(int id) throws SQLException;

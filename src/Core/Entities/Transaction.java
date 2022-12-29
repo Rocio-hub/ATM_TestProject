@@ -15,18 +15,18 @@ public class Transaction {
 
 	public Transaction(int id, int customerId, int toAccountNumber, String type, String date, double amount) {
 		this.setId(id);
-        this.setcustomerId(customerId);
+        this.setCustomerId(customerId);
         this.setToAccountNumber(toAccountNumber);
         this.setType(type);
         this.setDate(date);
         this.setAmount(amount);
 	}
 
-	public int getcustomerId() {
+	public int getCustomerId() {
 		return customerId;
 	}
 
-	public void setcustomerId(int customerId) {
+	public void setCustomerId(int customerId) {
 		this.customerId = customerId;
 	}
 
