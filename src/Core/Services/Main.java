@@ -8,16 +8,14 @@ import java.sql.SQLException;
 import Infrastructure.DatabaseSeeder;
 
 public class Main extends ConsoleManager {
-	
+
 	public Main(DataAccess dataAccess) {
 		super(dataAccess);
 		// TODO Auto-generated constructor stub
 	}
 
-	public static void main(String[] args) throws IOException, SQLException {		
+	public static void main(String[] args) throws IOException, SQLException {
 		Connection connection;
-		
-		
 
 		// Load the JDBC driver
 		try {

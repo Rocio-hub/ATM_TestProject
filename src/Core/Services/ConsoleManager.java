@@ -3,8 +3,6 @@ package Core.Services;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -25,7 +23,6 @@ public class ConsoleManager {
 	private DecimalFormat moneyFormat = new DecimalFormat("###,##0.00' DKK'");
 	private int localPinNumber, selection;
 	private String localCustName;
-	private Customer customer;
 	private List<Customer> customerList;;
 
 	/* Validate Login information customer number and pin number */
@@ -356,15 +353,15 @@ public class ConsoleManager {
 		this.selection = selection;
 	}
 
-	public void setDataAccess(DataAccess dataAccess2) {
-		this.dataAccess = dataAccess2;
-	}
-
 	public void setATMAvailableCash(int cash) {
 		this.ATM_AVAILABLE_CASH = cash;
 	}
 	
 	public int getATMAvailableCash() {
 		return ATM_AVAILABLE_CASH;
+	}
+
+	public void setDataAccess(DataAccess dataAccess2) {
+		this.dataAccess = dataAccess2;
 	}
 }
