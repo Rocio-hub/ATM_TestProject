@@ -55,11 +55,8 @@ public class ConsoleManager {
 
 	public boolean loginLogic() throws IOException, SQLException {
 		for (Customer customer : dataAccess.getAllUsers()) {
-			System.out.println(getLocalCustName());
-			System.out.println(customer.getCustomerName());
 			if (getLocalCustName().equals(customer.getCustomerName()) && getLocalPinNumber() == customer.getPin()) {
 				currentCustomer = customer;
-				//this.setCustomer(customer);
 
 				setLocalCustName("");
 				setLocalPinNumber(0);
