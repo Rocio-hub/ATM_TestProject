@@ -39,14 +39,14 @@ public class IntegrationTest {
 
 	@Test
 	public void test1() {
-		assertEquals(1, consoleManager.getCustomer().getId(), 0.0);
+		assertEquals(1, consoleManager.getCustomer().getId());
 	}
 
 	@Test
 	public void test2() throws SQLException {
 		when(mockDataAccess.getUserById(customer.getId())).thenReturn(customer);
 		consoleManager.withdrawFunds(500.0);
-		assertEquals(14500.0, consoleManager.getATMAvailableCash(), 0.0);
+		assertEquals(14500.0, consoleManager.getATMAvailableCash());
 	}
 
 }

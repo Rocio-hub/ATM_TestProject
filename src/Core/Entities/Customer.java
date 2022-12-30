@@ -6,9 +6,9 @@ public class Customer {
 	private String customerName;
 	private int pin;
 	//private String name;
-	private Double balance = 0.0;
-	private Double dailyLimit = 0.0;
-	private Double moneyUsed = 0.0;
+	private double balance = 0.0;
+	private double dailyLimit = 0.0;
+	private double moneyUsed = 0.0;
 	//private List<Transaction> transactionList;
 	
 	public Customer() {
@@ -34,7 +34,7 @@ public class Customer {
 		this.id = id;
 	}
 
-	public Double getBalance() {
+	public double getBalance() {
 		return balance;
 	}
 

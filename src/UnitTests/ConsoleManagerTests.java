@@ -351,6 +351,6 @@ public class ConsoleManagerTests {
 	@Test
 	public void setATMAvailableCash_ShouldSetCorrectAvailableCash() {
 		consoleManager.setATMAvailableCash(100);
-		assertEquals(100, consoleManager.getATMAvailableCash(), 0.0);
+		assertEquals(100, consoleManager.getATMAvailableCash());
 	}
 }

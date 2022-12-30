@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import Core.Entities.Customer;
 import Core.Entities.Transaction;
+import org.omg.Messaging.SyncScopeHelper;
 
 public class ConsoleManager {
 	private DataAccess dataAccess;
@@ -60,6 +61,7 @@ public class ConsoleManager {
 
 				setLocalCustName("");
 				setLocalPinNumber(0);
+				System.out.println("Login successful!");
 				return true;
 			}
 		}
