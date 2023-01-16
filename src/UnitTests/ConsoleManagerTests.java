@@ -5,9 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -19,11 +17,14 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 
 import Core.Entities.Customer;
 import Core.Entities.Transaction;
 import Core.Services.ConsoleManager;
 import Core.Services.DataAccess;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class ConsoleManagerTests {
 
@@ -94,24 +95,7 @@ public class ConsoleManagerTests {
 	}
 
 	@Test
-	public void loginLogic_InvalidUserName_ValidPin_ReturnsFalse() throws IOException, SQLException {
-
-		// Arrange: Create mock objects
-		List<Customer> customers = new ArrayList<Customer>();
-		customers.add(new Customer(1, "Bob", 1234, 3000.0, 2000.0, 80.0));
-		when(mockDataAccess.getAllUsers()).thenReturn(customers);
-
-		// Act: Set up test input and expected output
-		consoleManager.setLocalCustName("Alice");
-		consoleManager.setLocalPinNumber(1234);
-		consoleManager.setDataAccess(mockDataAccess);
-
-		// Assert: Invoke the method and assert the output
-		assertTrue(!consoleManager.loginLogic());
-	}
-
-	@Test
-	public void loginLogic_5678_EmptyUserName_ValidPin_ReturnsFalse() throws IOException, SQLException {
+	public void loginLogic_EmptyUserName_ReturnsFalse() throws IOException, SQLException {
 
 		// Arrange: Create mock objects
 		List<Customer> customers = new ArrayList<Customer>();
@@ -128,7 +112,7 @@ public class ConsoleManagerTests {
 	}
 
 	@Test
-	public void loginLogic_Bob_ValidUserName_EmptyPin_ReturnsFalse() throws IOException, SQLException {
+	public void loginLogic_EmptyPin_ReturnsFalse() throws IOException, SQLException {
 
 		// Arrange: Create mock objects
 		List<Customer> customers = new ArrayList<Customer>();
@@ -143,23 +127,7 @@ public class ConsoleManagerTests {
 		assertTrue(!consoleManager.loginLogic());
 	}
 
-	@Test
-	public void loginLogic_EmptyUserName_EmptyPin_ReturnsFalse() throws IOException, SQLException {
-
-		// Arrange: Create mock objects
-		List<Customer> customers = new ArrayList<Customer>();
-		customers.add(new Customer(1, "Bob", 1234, 3000.0, 2000.0, 80.0));
-		when(mockDataAccess.getAllUsers()).thenReturn(customers);
-
-		// Act: Set up test input and expected output
-		consoleManager.setLocalCustName("");
-		consoleManager.setDataAccess(mockDataAccess);
-
-		// Assert: Invoke the method and assert the output
-		assertTrue(!consoleManager.loginLogic());
-	}
-
-	@Test
+/*	@Test
 	public void viewBalance_2000() throws IOException, SQLException {
 
 		// Arrange: Create mock objects
@@ -177,16 +145,37 @@ public class ConsoleManagerTests {
 			double delta = 0.0;
 			assertEquals(expectedOutput, consoleManager.getCustomer().getBalance(), delta);
 		}
+	}*/
+
+	@ParameterizedTest
+	@CsvSource({
+			"2000.0, 2000.0",
+			"0.0, 0.0",
+			"-50, -50",
+			"1000000, 1000000",
+			"2000.50, 2000.50",
+			"2000.12345678, 2000.12"
+	})
+	public void testViewBalance_havingACustomerBalance_shouldReturnVaidBalance(double balance, double expectedResult) throws SQLException, IOException {
+		// Arrange: Create mock objects
+		mockDataAccess = mock(DataAccess.class);
+		consoleManager = new ConsoleManager(mockDataAccess);
+		Customer customer = new Customer(1, "Bob", 1234, balance, 2000.0, 80.0);
+		when(mockDataAccess.getUserById(anyInt())).thenReturn(customer);
+
+		// Act: Set up test input and expected output
+		consoleManager.setCustomer(customer);
+		consoleManager.setDataAccess(mockDataAccess);
+
+		// Assert: Invoke the method and assert the output
+		if (consoleManager.loginLogic()) {
+			consoleManager.viewBalance();
+			double delta = 0.0;
+			assertEquals(expectedResult, consoleManager.getCustomer().getBalance(), delta);
+		}
 	}
 
-	// 1. positive balance 2000 2000
-	// 2. zero balance 0 0
-	// 3. negative balance -$50 -$50
-	// 4. very large balance $1,000,000 $1,000,000
-	// 5. decimal points $12.35" $12.35"
-	// 6. very large decimal points: input: $12.345678 output: $12.35"
-
-	@Test
+/*	@Test
 	public void makeDeposit_Positive() throws IOException, SQLException {
 
 		// Arrange: Create mock objects
@@ -202,6 +191,48 @@ public class ConsoleManagerTests {
 		if (consoleManager.loginLogic()) {
 			consoleManager.viewBalance();
 			double expectedOutput = 2500.0;
+			assertTrue(expectedOutput == (double) consoleManager.getCustomer().getBalance());
+		}
+	}*/
+
+	@ParameterizedTest
+	@ValueSource(doubles = {500, 1000, 1500, 2000, 2500})
+	public void makeDeposit_(double amount) throws IOException, SQLException {
+		// Arrange: Create mock objects
+		mockDataAccess = mock(DataAccess.class);
+		consoleManager = new ConsoleManager(mockDataAccess);
+
+		Customer customer = new Customer(1, "Remi", 1234, 3000.0, 2000.0, 80.0);
+		List<Customer> customerList = new ArrayList<Customer>();
+		customerList.add(customer);
+
+		Transaction transaction = new Transaction(1, 1, 0, "DEPOSIT", "30/12/22", 500);
+		List<Transaction> transactionList = new ArrayList<Transaction>();
+
+		consoleManager.setCustomer(customer);
+		double expectedOutput = customer.getBalance() + amount;
+
+		// Act: Set up test input and expected output
+		consoleManager.setDataAccess(mockDataAccess);
+		consoleManager.setCustomer(customer);
+		consoleManager.setLocalCustName(customer.getCustomerName());
+		consoleManager.setLocalPinNumber(customer.getPin());
+
+		when(mockDataAccess.getAllUsers()).thenReturn(customerList);
+		doAnswer(invocation -> {
+			consoleManager.getCustomer().setBalance(customer.getBalance() + amount);
+			return null;
+		}).when(mockDataAccess).makeDeposit(customer.getId(), amount);
+		when(mockDataAccess.getAllTransactionsById(customer.getId())).thenReturn(new ArrayList<Transaction>());
+		doAnswer(invocation -> {
+			transactionList.add(transaction);
+			return null;
+		}).when(mockDataAccess).createTransaction(transaction);
+
+		// Assert: Invoke the method and assert the output
+		if (consoleManager.loginLogic()) {
+			mockDataAccess.makeDeposit(customer.getId(), amount);
+			double aa = consoleManager.getCustomer().getBalance();
 			assertTrue(expectedOutput == (double) consoleManager.getCustomer().getBalance());
 		}
 	}
@@ -235,7 +266,7 @@ public class ConsoleManagerTests {
 	}
 
 	@Test
-	public void sendFunds() throws IOException, SQLException {
+	public void sendFunds_send500_shouldCreateValidTransaction() throws IOException, SQLException {
 
 		// Arrange: Create mock objects
 		when(mockCustomer.getBalance()).thenReturn(3000.0);

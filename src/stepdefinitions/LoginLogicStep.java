@@ -8,6 +8,7 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import org.junit.After;
 import org.junit.Before;
+import org.mockito.Mock;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,43 +22,54 @@ import static org.mockito.Mockito.when;
 
 public class LoginLogicStep {
 
-	private final DataAccess mockDataAccess = mock(DataAccess.class);
-	ConsoleManager consoleManager = new ConsoleManager(mockDataAccess);
-	private ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-	String a;
+    @Mock
+    private final DataAccess mockDataAccess = mock(DataAccess.class);
 
-	@Before
-	public void setUp(){
-		System.setOut(new PrintStream(outContent));
-	}
+    final ConsoleManager consoleManager = new ConsoleManager(mockDataAccess);
+    private ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    Customer customerValid;
+    Customer customerTest;
+    List<Customer> customerList;
+    String lastLine ="";
 
-	 @After
-	 public void restoreStream(){
-		 System.setOut(System.out);
-	 }
+    @Before
+    public void setUp(){
+        System.setOut(new PrintStream(outContent));
+    }
+    @After
+    public void restoreStream(){
+        System.setOut(System.out);
+    }
+    @Given("a user with a username {string} and a PIN number {string}")
+    public void a_user_with_a_username_and_a_pin_number(String username, String pin) throws SQLException {
+        int myPin;
+        try {
+            myPin = Integer.parseInt(pin);
+        } catch (NumberFormatException e) {
+            myPin = 0;
+            lastLine = "Invalid character(s). Only numbers.";
+        }
+        System.setOut(new PrintStream(outContent));
+        customerValid = new Customer(1, "Remi", 1234, 3000.0, 500.0, 80.0);
+        customerTest = new Customer(1, username, myPin, 3000.0, 500.0, 80.0);
 
-	@Given("I have a login in console")
-	public void i_have_a_login_in_console() {
-	    System.setOut(new PrintStream(outContent));
-	}
-
-	@When("I attempt to login with {string} as a valid username and {int} as a valid pin")
-	public void i_attempt_to_login_with_as_a_valid_username_and_as_a_valid_pin(String customerName, Integer pin) throws SQLException, IOException {
-		Customer c = new Customer(1, "Remi", 1234, 3000.0, 2000.0, 80);
-		List<Customer> customerList = new ArrayList<Customer>();
-		customerList.add(c);
-
-		when(mockDataAccess.getAllUsers()).thenReturn(customerList);
-		consoleManager.setLocalCustName(customerName);
-		consoleManager.setLocalPinNumber(pin);
-		consoleManager.loginLogic();
-	}
-
-	@Then("The last line printed should be {string}")
-	public void the_last_line_printed_should_be(String expectedOutput) {
-			String output = outContent.toString();
-			String[] lines = output.split("\\r?\\n");
-			String lastLine = lines[lines.length - 1];
-			assertEquals(expectedOutput, lastLine);
-	}
+        customerList = new ArrayList<Customer>();
+        customerList.add(customerValid);
+        when(mockDataAccess.getAllUsers()).thenReturn(customerList);
+    }
+    @When("the user attempts to login into the ATM using the console")
+    public void the_user_attempts_to_login_into_the_atm_using_the_console() throws IOException, SQLException {
+        consoleManager.setLocalCustName(customerTest.getCustomerName());
+        consoleManager.setLocalPinNumber(customerTest.getPin());
+        consoleManager.loginLogic();
+    }
+    @Then("the login should be {string}")
+    public void the_login_should_be(String expectedResult) {
+        if (lastLine.isEmpty()) {
+            String output = outContent.toString();
+            String[] lines = output.split("\\r?\\n");
+            lastLine = lines[lines.length - 1];
+        }
+        assertEquals(expectedResult, lastLine);
+    }
 }

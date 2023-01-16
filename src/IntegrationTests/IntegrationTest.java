@@ -1,10 +1,7 @@
 package IntegrationTests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
@@ -13,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import Core.Entities.Customer;
-import Core.Entities.Transaction;
 import Core.Services.ConsoleManager;
 import Core.Services.DataAccess;
 
@@ -38,15 +34,15 @@ public class IntegrationTest {
 	}
 
 	@Test
-	public void test1() {
+	public void test_GetCustomerId_ShouldReturnCorrectId() {
 		assertEquals(1, consoleManager.getCustomer().getId());
 	}
 
 	@Test
-	public void test2() throws SQLException {
+	public void WithdrawFunds_ShouldUpdateATMAvailableCash() throws SQLException {
 		when(mockDataAccess.getUserById(customer.getId())).thenReturn(customer);
 		consoleManager.withdrawFunds(500.0);
-		assertEquals(14500.0, consoleManager.getATMAvailableCash());
+		assertEquals(14500.0, consoleManager.getATMAvailableCash(), 0.1);
 	}
 
 }
